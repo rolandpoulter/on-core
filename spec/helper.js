@@ -217,11 +217,10 @@ global.helper = {
      * @returns {Promise}
      */
     stop: function () {
-        if (this.core) {
-            return this.core.stop();
-        } else {
-            return bluebird.resolve();
-        }
+      if (this.core) {
+          return this.core.stop();
+      }
+      return Promise.resolve();
     },
 
     /**
@@ -294,13 +293,16 @@ global.helper = {
      */
     after: function (callback) {
         after("helper.after", function () {
+            this.timeout(10000);
             return bluebird.resolve()
                 .then(function() {
                     if (_.isFunction(callback)) {
                         return callback();
                     }
                 })
-                .then(helper.stop.bind(helper));
+                .then(function () {
+                  return helper.reset().then(helper.stop.bind(helper));
+                });
         });
     }
 };
